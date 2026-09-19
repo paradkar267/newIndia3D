@@ -102,6 +102,8 @@ body {
   min-height: 680px;
   overflow: hidden;
   background: linear-gradient(180deg, #FAF7F2 0%, #F5F2EB 60%, #ECE6DC 82%, #E2DAD0 100%);
+  contain: layout style paint;
+  will-change: transform;
 }
 
 /* ─── Persistent Speedometer Telemetry (Top Left) ────────── */
@@ -172,6 +174,8 @@ body {
   height: 100%;
   background: transparent;
   overflow: hidden;
+  contain: layout style;
+  transform: translateZ(0);
 }
 
 /* Upper Stage: Off-White Horizon for Reachstacker Crane & Truck */
@@ -436,6 +440,8 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .shared-road-svg {
@@ -526,7 +532,7 @@ body {
   gap: 0.65rem;
   padding: 0.6rem 1.65rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.16);
   color: var(--text-white);
   font-size: 0.76rem;
@@ -534,8 +540,6 @@ body {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   transition: background 0.2s, border-color 0.2s;
 }
 
@@ -653,7 +657,8 @@ body {
   overflow: hidden;
   z-index: 30;
   pointer-events: none;
-  will-change: mask-image, -webkit-mask-image, clip-path, opacity;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 /* Layer 1: Parallax Ocean Texture */
@@ -769,14 +774,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  background: rgba(10, 28, 48, 0.65);
+  background: rgba(10, 28, 48, 0.8);
   padding: 1.6rem 2rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
   will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .ocean-story-col.story-center {

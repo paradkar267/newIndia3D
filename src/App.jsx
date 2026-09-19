@@ -378,6 +378,19 @@ export default function App() {
     const roadTravel = { progress: 0 }
 
     // ── MASTER UNIFIED COORDINATED TIMELINE ─────────────────────────
+    // Cache for speedometer text — avoid DOM writes when value hasn't changed
+    let _lastSpeedVal = '', _lastSpeedLabel = ''
+    const setSpeed = (val, label) => {
+      if (speedValRef.current && val !== _lastSpeedVal) {
+        speedValRef.current.innerText = val
+        _lastSpeedVal = val
+      }
+      if (speedLabelRef.current && label !== _lastSpeedLabel) {
+        speedLabelRef.current.innerText = label
+        _lastSpeedLabel = label
+      }
+    }
+
     const tl = gsap.timeline({
       scrollTrigger: {
         id: 'masterSceneTrigger',
@@ -385,7 +398,7 @@ export default function App() {
         start: 'top top',
         end: '+=13000',
         pin: true,
-        scrub: 0.6,
+        scrub: 0.3,
         anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
@@ -420,41 +433,26 @@ export default function App() {
           }
 
           if (p < 0.03) {
-            if (speedValRef.current) speedValRef.current.innerText = '00'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'TERMINAL YARD'
-          } else if (p >= 0.03 && p < 0.12) {
-            if (speedValRef.current) speedValRef.current.innerText = '08'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'BAY POSITIONING'
-          } else if (p >= 0.12 && p < 0.16) {
-            if (speedValRef.current) speedValRef.current.innerText = '16'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'CONTAINER LATCHED'
-          } else if (p >= 0.16 && p < 0.20) {
-            const v = Math.round(18 + ((p - 0.16) / 0.04) * 14)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'SERVICES DISPATCH'
-          } else if (p >= 0.20 && p < 0.33) {
-            const v = Math.round(32 + ((p - 0.20) / 0.13) * 23)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'ROAD FREIGHT'
-          } else if (p >= 0.33 && p < 0.46) {
-            if (speedValRef.current) speedValRef.current.innerText = '55'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'CAMERA ELEVATION'
-          } else if (p >= 0.46 && p < 0.64) {
-            const v = Math.round(60 + ((p - 0.46) / 0.18) * 32)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'HIGHWAY CORRIDOR'
-          } else if (p >= 0.64 && p < 0.84) {
-            const v = Math.round(18 + ((p - 0.64) / 0.20) * 6)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'OCEAN TRANSIT (KTS)'
-          } else if (p >= 0.84 && p < 0.90) {
-            if (speedValRef.current) speedValRef.current.innerText = '24'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'DEEP SEA CORRIDOR'
-          } else if (p >= 0.90 && p < 0.97) {
-            const v = Math.round(480 + ((p - 0.90) / 0.07) * 60)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'AIR FREIGHT (KTS)'
-          } else if (p >= 0.97) {
+            setSpeed('00', 'TERMINAL YARD')
+          } else if (p < 0.12) {
+            setSpeed('08', 'BAY POSITIONING')
+          } else if (p < 0.16) {
+            setSpeed('16', 'CONTAINER LATCHED')
+          } else if (p < 0.20) {
+            setSpeed(String(Math.round(18 + ((p - 0.16) / 0.04) * 14)), 'SERVICES DISPATCH')
+          } else if (p < 0.33) {
+            setSpeed(String(Math.round(32 + ((p - 0.20) / 0.13) * 23)), 'ROAD FREIGHT')
+          } else if (p < 0.46) {
+            setSpeed('55', 'CAMERA ELEVATION')
+          } else if (p < 0.64) {
+            setSpeed(String(Math.round(60 + ((p - 0.46) / 0.18) * 32)), 'HIGHWAY CORRIDOR')
+          } else if (p < 0.84) {
+            setSpeed(String(Math.round(18 + ((p - 0.64) / 0.20) * 6)), 'OCEAN TRANSIT (KTS)')
+          } else if (p < 0.90) {
+            setSpeed('24', 'DEEP SEA CORRIDOR')
+          } else if (p < 0.97) {
+            setSpeed(String(Math.round(480 + ((p - 0.90) / 0.07) * 60)), 'AIR FREIGHT (KTS)')
+          } else {
             if (speedometerRef.current) speedometerRef.current.style.opacity = '0'
           }
         },
@@ -685,27 +683,24 @@ export default function App() {
     }, 0.425)
     tl.set(servicesBlackFillRef.current, { display: 'none' }, 0.46)
 
-    // ── Phase 5: Overhead Highway Travel & Road Scene [0.47 - 0.64] ───
+    // quickSetters are created once, reused every frame — GSAP's fastest per-frame API
+    const setTruckX        = gsap.quickSetter(topTruckGroupRef.current, 'x', 'px')
+    const setTruckY        = gsap.quickSetter(topTruckGroupRef.current, 'y', 'px')
+    const setTruckRot      = gsap.quickSetter(topTruckGroupRef.current, 'rotation', 'deg')
+    const setRoadScale     = gsap.quickSetter(roadWorldGroupRef.current, 'scale')
+    const setRoadY         = gsap.quickSetter(roadWorldGroupRef.current, 'y', 'px')
+
     tl.to(roadTravel, {
       progress: 1,
       ease: 'none',
       duration: 0.17,
       onUpdate: () => {
         const pt = getRoadPose(roadTravel.progress)
-        if (topTruckGroupRef.current) {
-          gsap.set(topTruckGroupRef.current, {
-            x: pt.x,
-            y: pt.y,
-            rotation: pt.rot,
-          })
-        }
-        if (roadWorldGroupRef.current) {
-          gsap.set(roadWorldGroupRef.current, {
-            transformOrigin: '700px 240px',
-            scale: pt.cameraScale,
-            y: -pt.cameraY,
-          })
-        }
+        setTruckX(pt.x)
+        setTruckY(pt.y)
+        setTruckRot(pt.rot)
+        setRoadScale(pt.cameraScale)
+        setRoadY(-pt.cameraY)
       },
     }, 0.47)
 
