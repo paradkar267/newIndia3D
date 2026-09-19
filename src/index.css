@@ -471,6 +471,11 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
 }
 
 .shared-road-svg {
@@ -705,7 +710,11 @@ body {
   overflow: hidden;
   z-index: 30;
   pointer-events: none;
-  will-change: mask-image, -webkit-mask-image, clip-path, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
 }
 
 /* Layer 1: Parallax Ocean Texture */
@@ -716,6 +725,10 @@ body {
   height: 132%;
   pointer-events: none;
   z-index: 1;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   will-change: transform;
 }
 
@@ -727,12 +740,15 @@ body {
   display: block;
 }
 
-/* Layer 2 & 3: Container Ship Camera Group (Includes attached Wake SVG) */
+/* Layer 2 & 3: Container Ship Camera Group */
 .ocean-ship-group {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) translateZ(0);
+  -webkit-transform: translate(-50%, -50%) translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   height: 85vh;
   max-height: 880px;
   width: auto;
@@ -751,7 +767,9 @@ body {
   display: block;
   z-index: 2;
   transform: translateZ(0);
-  filter: drop-shadow(0 12px 16px rgba(2, 10, 25, 0.45));
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  /* ponytail: drop-shadow filter removed to prevent 60ms Gaussian blur spikes on 1024x1536 PNG during scroll */
 }
 
 /* Dynamic Ship Sonar Pulse Animation */
@@ -764,6 +782,7 @@ body {
   height: 400px;
   pointer-events: none;
   z-index: 1;
+  opacity: 0;
 }
 
 .sonar-ring {
@@ -773,7 +792,6 @@ body {
   border: 1.5px solid rgba(72, 202, 228, 0.6);
   opacity: 0;
   animation: sonarExpand 3.6s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
-  will-change: transform, opacity;
 }
 
 .sonar-ring-2 {
@@ -817,8 +835,6 @@ body {
   width: 32px;
   height: 100%;
   background: radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.85) 0%, rgba(160, 230, 255, 0.3) 50%, transparent 80%);
-  animation: wakeBubble 1.4s infinite ease-in-out;
-  will-change: transform, opacity;
 }
 
 .wake-line {
@@ -1259,7 +1275,10 @@ body {
   display: block;
   z-index: 2;
   position: relative;
-  filter: drop-shadow(0 20px 35px rgba(0, 15, 40, 0.45));
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  /* ponytail: drop-shadow filter removed to prevent blur rasterization overhead */
 }
 
 /* ─── SCENE 6: Light Trust & Network Section (Post-Flyover Base Layer) ─── */

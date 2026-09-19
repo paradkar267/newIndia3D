@@ -158,6 +158,7 @@ export default function App() {
   const oceanBgRef            = useRef(null)
   const oceanVideoRef         = useRef(null)
   const shipGroupRef          = useRef(null)
+  const shipSonarRef          = useRef(null)
   const oceanHeadlineRef      = useRef(null)
   const storyBlocksRef        = useRef(null)
   const storyLeftRef          = useRef(null)
@@ -342,17 +343,19 @@ export default function App() {
     gsap.set(milestone2Ref.current, { opacity: 0, y: 25 })
 
     // Ocean & Air Initial States (Hidden during Crane, Services, Road)
-    gsap.set(oceanLayerRef.current, { y: '100%', opacity: 1, display: 'block' })
+    gsap.set(oceanLayerRef.current, { y: '100%', opacity: 1, display: 'block', force3D: true })
     if (oceanLayerRef.current) {
       oceanLayerRef.current.style.webkitMaskImage = ''
       oceanLayerRef.current.style.maskImage = ''
     }
-    gsap.set(oceanBgRef.current, { y: 0 })
+    gsap.set(oceanBgRef.current, { y: 0, force3D: true })
+    gsap.set(shipSonarRef.current, { opacity: 0 })
     gsap.set(shipGroupRef.current, {
       x: 0,
       y: 0,
-      scale: 2.85,
+      scale: 1.5, // ponytail: 1.5 covers >100% viewport height for close-up deck framing without 2.85x rasterization stall
       transformOrigin: '50% 50%',
+      force3D: true,
     })
     gsap.set(oceanHeadlineRef.current, { opacity: 0, y: 40, scale: 0.96 })
     gsap.set(storyBlocksRef.current, { opacity: 0 })
@@ -829,6 +832,7 @@ export default function App() {
       opacity: 0,
       duration: 0.06,
       ease: 'power2.in',
+      force3D: true,
     }, 0.64)
 
     tl.set([editorialLeftRef.current, milestonesRightRef.current, sharedRoadWrapRef.current], {
@@ -840,6 +844,7 @@ export default function App() {
       y: '0%',
       duration: 0.06,
       ease: 'power2.out',
+      force3D: true,
     }, 0.64)
 
     // ── Phase 7: Step 1 & 2 - Deck Close-Up Pullback to Full Ship & Heading Reveal [0.70 - 0.78] ───
@@ -851,15 +856,17 @@ export default function App() {
       y: 0,
       duration: 0.08,
       ease: 'power1.inOut',
+      force3D: true,
     }, 0.70)
 
     tl.to(oceanBgRef.current, {
       y: 10,
       duration: 0.08,
       ease: 'none',
+      force3D: true,
     }, 0.70)
 
-    // Reveal heading as whole ship becomes visible (near end of this phase)
+    // Reveal heading and sonar pulse as whole ship becomes visible
     tl.to(oceanHeadlineRef.current, {
       opacity: 1,
       y: 0,
@@ -868,18 +875,26 @@ export default function App() {
       ease: 'power2.out',
     }, 0.74)
 
+    tl.to(shipSonarRef.current, {
+      opacity: 1,
+      duration: 0.04,
+      ease: 'power2.out',
+    }, 0.75)
+
     // ── Phase 8: Step 3 - Wide Ocean Pullback & Feature Copy [0.78 - 0.85] ───
     // Pull back from ~1 viewport height to 38-42% viewport height
     tl.to(shipGroupRef.current, {
       scale: 0.40,
       duration: 0.07,
       ease: 'power1.inOut',
+      force3D: true,
     }, 0.78)
 
     tl.to(oceanBgRef.current, {
       y: 20,
       duration: 0.07,
       ease: 'none',
+      force3D: true,
     }, 0.78)
 
     // Headline leaves after readable interval
@@ -921,17 +936,25 @@ export default function App() {
       ease: 'power2.in',
     }, 0.85)
 
+    tl.to(shipSonarRef.current, {
+      opacity: 0,
+      duration: 0.03,
+      ease: 'power2.in',
+    }, 0.85)
+
     // Ship reduces towards 14-16% viewport height (scale: 0.15)
     tl.to(shipGroupRef.current, {
       scale: 0.15,
       duration: 0.05,
       ease: 'power1.inOut',
+      force3D: true,
     }, 0.85)
 
     tl.to(oceanBgRef.current, {
       y: 35,
       duration: 0.05,
       ease: 'none',
+      force3D: true,
     }, 0.85)
 
     // Distant cloud coverage increases
@@ -1456,7 +1479,7 @@ export default function App() {
           {/* Layer 2 & 3: Container Ship Camera Group */}
           <div className="ocean-ship-group" ref={shipGroupRef}>
             {/* Marine Radar Sonar Rings */}
-            <div className="ship-sonar-pulse" aria-hidden="true">
+            <div className="ship-sonar-pulse" ref={shipSonarRef} aria-hidden="true">
               <span className="sonar-ring sonar-ring-1" />
               <span className="sonar-ring sonar-ring-2" />
             </div>
