@@ -24,10 +24,13 @@ dist-ssr
 *.sw?
 
 # Video recordings & extracted debug frames
-*.mp4
+Recording*.mp4
 extracted_frames/
 ref_frames/
 assets-input/
 crop.ps1
 FRAME_GUIDE.jpg
 HANDOFF_FRAME_GUIDE.jpg
+
+# Ensure public ocean video is tracked in git
+!public/assets/logistics/oceanbg.mp4

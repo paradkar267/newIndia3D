@@ -189,8 +189,13 @@ export default function App() {
       }
     })
 
-    // Ensure ocean video plays smoothly
+    // Ensure ocean video is fully configured for browser autoplay policies
     if (oceanVideoRef.current) {
+      oceanVideoRef.current.muted = true
+      oceanVideoRef.current.defaultMuted = true
+      oceanVideoRef.current.playsInline = true
+      oceanVideoRef.current.setAttribute('playsinline', '')
+      oceanVideoRef.current.setAttribute('webkit-playsinline', '')
       oceanVideoRef.current.play().catch(() => {})
     }
 
@@ -1356,7 +1361,6 @@ export default function App() {
           <div className="ocean-bg" ref={oceanBgRef}>
             <video
               ref={oceanVideoRef}
-              src="/assets/logistics/oceanbg.mp4"
               className="ocean-bg-video"
               autoPlay
               muted
@@ -1364,7 +1368,9 @@ export default function App() {
               playsInline
               preload="auto"
               poster="/assets/logistics/ocean-background.png"
-            />
+            >
+              <source src="/assets/logistics/oceanbg.mp4" type="video/mp4" />
+            </video>
           </div>
 
           {/* Layer 2 & 3: Container Ship Camera Group */}
