@@ -94,11 +94,8 @@ export default function App() {
   const containerRef = useRef(null)
   const sceneRef     = useRef(null)
 
-  // Header & Telemetry Refs
+  // Header & Watermark Refs
   const terminalCopyRef = useRef(null)
-  const speedometerRef  = useRef(null)
-  const speedValRef     = useRef(null)
-  const speedLabelRef   = useRef(null)
   const watermarkRef    = useRef(null)
 
   // Crane Stage Refs (Phase 1)
@@ -175,9 +172,6 @@ export default function App() {
   const airplaneGroupRef      = useRef(null)
   const airplaneMistRef       = useRef(null)
   const aircraftRevealRef     = useRef(null)
-
-  // GPS Coordinates ref
-  const gpsCoordRef = useRef(null)
 
   // Asset preloader for ocean, clouds, ship and aircraft assets
   useEffect(() => {
@@ -270,7 +264,6 @@ export default function App() {
       gsap.set(truckGroupRef.current, { x: TRUCK_CENTER_X, y: 377, opacity: 1, scaleY: 1 })
       gsap.set(truckContainerRef.current, { opacity: 1 })
 
-      gsap.set(speedometerRef.current, { opacity: 0 })
       gsap.set(watermarkRef.current, { opacity: 1 })
       gsap.set(sharedRoadWrapRef.current, { y: '0%', opacity: 1 })
       gsap.set(servicesBandRef.current, { opacity: 1 })
@@ -314,8 +307,7 @@ export default function App() {
     gsap.set(wheels, { transformOrigin: '50% 50%', rotation: 0 })
     gsap.set(roadSpeedLineRef.current, { opacity: 0 })
 
-    // Telemetry & Watermark
-    gsap.set(speedometerRef.current, { opacity: 0 })
+    // Watermark
     gsap.set(watermarkRef.current, { opacity: 0, x: 0 })
 
     // Services Content Overlay
@@ -459,70 +451,6 @@ export default function App() {
               oceanVideoRef.current.play().catch(() => {})
             }
           }
-
-          let speedVal = '00'
-          let speedLbl = 'TERMINAL YARD'
-          let gpsText = '18.9482° N | 72.8354° E • BERTH 07'
-
-          if (p < 0.03) {
-            speedVal = '00'
-            speedLbl = 'TERMINAL YARD'
-            gpsText = '18.9482° N | 72.8354° E • BERTH 07'
-          } else if (p >= 0.03 && p < 0.12) {
-            speedVal = '08'
-            speedLbl = 'BAY POSITIONING'
-            gpsText = '18.9482° N | 72.8354° E • HOIST ACTIVE'
-          } else if (p >= 0.12 && p < 0.16) {
-            speedVal = '16'
-            speedLbl = 'CONTAINER LATCHED'
-            gpsText = '18.9485° N | 72.8359° E • LOCKED'
-          } else if (p >= 0.16 && p < 0.20) {
-            const v = Math.round(18 + ((p - 0.16) / 0.04) * 14)
-            speedVal = `${v}`
-            speedLbl = 'SERVICES DISPATCH'
-            gpsText = '18.9520° N | 72.8410° E • DEPARTURE'
-          } else if (p >= 0.20 && p < 0.33) {
-            const v = Math.round(32 + ((p - 0.20) / 0.13) * 23)
-            speedVal = `${v}`
-            speedLbl = 'ROAD FREIGHT'
-            gpsText = '19.0760° N | 72.8777° E • NH-48 EXPRESS'
-          } else if (p >= 0.33 && p < 0.46) {
-            speedVal = '55'
-            speedLbl = 'CAMERA ELEVATION'
-            gpsText = '19.2183° N | 73.0805° E • CORRIDOR'
-          } else if (p >= 0.46 && p < 0.64) {
-            const v = Math.round(60 + ((p - 0.46) / 0.18) * 32)
-            speedVal = `${v}`
-            speedLbl = 'HIGHWAY CORRIDOR'
-            gpsText = '19.8520° N | 73.4100° E • ARTERIAL'
-          } else if (p >= 0.64 && p < 0.84) {
-            const v = Math.round(18 + ((p - 0.64) / 0.20) * 6)
-            speedVal = `${v}`
-            speedLbl = 'OCEAN TRANSIT (KTS)'
-            gpsText = '12.9716° N | 80.2520° E • PACIFIC LANE'
-          } else if (p >= 0.84 && p < 0.90) {
-            speedVal = '24'
-            speedLbl = 'DEEP SEA CORRIDOR'
-            gpsText = '01.3521° N | 103.8198° E • STRAITS'
-          } else if (p >= 0.90 && p < 0.97) {
-            const v = Math.round(480 + ((p - 0.90) / 0.07) * 60)
-            speedVal = `${v}`
-            speedLbl = 'AIR FREIGHT (KTS)'
-            gpsText = 'FL380 • 40.7128° N | 74.0060° W • NYC'
-          }
-
-          if (speedValRef.current && speedValRef.current.innerText !== speedVal) {
-            speedValRef.current.innerText = speedVal
-          }
-          if (speedLabelRef.current && speedLabelRef.current.innerText !== speedLbl) {
-            speedLabelRef.current.innerText = speedLbl
-          }
-          if (gpsCoordRef.current && gpsCoordRef.current.innerText !== gpsText) {
-            gpsCoordRef.current.innerText = gpsText
-          }
-          if (p >= 0.97 && speedometerRef.current && speedometerRef.current.style.opacity !== '0') {
-            speedometerRef.current.style.opacity = '0'
-          }
         },
       },
     })
@@ -604,13 +532,6 @@ export default function App() {
       duration: 0.04,
       ease: 'power2.inOut',
     }, 0.16)
-    // Speedometer fades in for road freight
-    tl.to(speedometerRef.current, {
-      opacity: 1,
-      duration: 0.03,
-      ease: 'power2.out',
-    }, 0.16)
-
     // Loaded 2D truck rolls smoothly from loading spot (1866) to visual center (1054)
     tl.to(truckGroupRef.current, {
       x: TRUCK_CENTER_X,
@@ -635,8 +556,7 @@ export default function App() {
       duration: 0.03,
     }, 0.17)
 
-    // Watermark & Telemetry fade in
-    tl.to(speedometerRef.current, { opacity: 1, duration: 0.03 }, 0.17)
+    // Watermark fades in
     tl.to(watermarkRef.current, { opacity: 1, duration: 0.035 }, 0.17)
 
     // Services content slides up over the solid black surface
@@ -1039,12 +959,6 @@ export default function App() {
       display: 'none',
     }, 0.985)
 
-    tl.to(speedometerRef.current, {
-      opacity: 0,
-      duration: 0.015,
-      ease: 'power1.out',
-    }, 0.96)
-
   }, { scope: containerRef })
 
   const handleNavClick = (e, targetHash) => {
@@ -1084,22 +998,6 @@ export default function App() {
 
       {/* Main Interactive Unified Scene Container */}
       <section className="scene-container" ref={sceneRef} aria-label="Interactive container loading, services, road, and ocean voyage">
-        {/* Speedometer Telemetry (Persistent Top-Left) */}
-        <div className="uc-speedometer" ref={speedometerRef}>
-          <div className="speed-hud-box">
-            <div className="speed-row">
-              <span className="speed-live-dot" />
-              <span className="speed-number" ref={speedValRef}>30</span>
-              <span className="speed-unit">KM/H</span>
-            </div>
-            <span className="speed-label" ref={speedLabelRef}>ROAD TRANSIT</span>
-            <div className="speed-hud-sub">
-              <span className="hud-metric" ref={gpsCoordRef}>18.9482° N | 72.8354° E • BERTH 07</span>
-              <span className="hud-badge">5G SATELLITE LOCK</span>
-            </div>
-          </div>
-        </div>
-
         {/* ── UNIFIED SHARED SCENE STAGE (Scenes 1 - 3: Crane, Services, Road) ── */}
         <div className="unified-scene-stage">
           {/* 1. Upper Stage Copy & Reachstacker Crane / Side-Truck SVG */}
