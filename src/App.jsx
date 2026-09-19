@@ -5,6 +5,9 @@ import { useGSAP } from '@gsap/react'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const BASE_URL = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`
+const assetUrl = (path) => `${BASE_URL}${path.replace(/^\//, '')}`
+
 // SVG viewBox for Crane/Side-View Stage: 0 -320 3950 1380 (Ground baseline at Y = 900)
 const TRUCK_WAIT_X   = 5800   // Far off-screen to right, rolls in only when user scrolls
 const TRUCK_LOAD_X   = 1866   // Precise loading spot underneath hoisted container
@@ -172,14 +175,17 @@ export default function App() {
   const airplaneMistRef       = useRef(null)
   const aircraftRevealRef     = useRef(null)
 
+  // GPS Coordinates ref
+  const gpsCoordRef = useRef(null)
+
   // Asset preloader for ocean, clouds, ship and aircraft assets
   useEffect(() => {
     const assets = [
-      '/assets/logistics/ocean-background.png',
-      '/assets/logistics/ship-top.png',
-      '/assets/logistics/plane-top.png',
-      '/assets/logistics/cloud-far.png',
-      '/assets/logistics/cloud-near.png',
+      assetUrl('assets/logistics/ocean-background.png'),
+      assetUrl('assets/logistics/ship-top.png'),
+      assetUrl('assets/logistics/plane-top.png'),
+      assetUrl('assets/logistics/cloud-far.png'),
+      assetUrl('assets/logistics/cloud-near.png'),
     ]
     assets.forEach((src) => {
       const img = new Image()
@@ -189,15 +195,55 @@ export default function App() {
       }
     })
 
-    // Ensure ocean video is fully configured for browser autoplay policies
-    if (oceanVideoRef.current) {
-      oceanVideoRef.current.muted = true
-      oceanVideoRef.current.defaultMuted = true
-      oceanVideoRef.current.playsInline = true
-      oceanVideoRef.current.setAttribute('playsinline', '')
-      oceanVideoRef.current.setAttribute('webkit-playsinline', '')
-      oceanVideoRef.current.play().catch(() => {})
+    // Ensure ocean video is fully configured for browser autoplay policies & deployment resilience
+    const playVideoSafe = () => {
+      if (oceanVideoRef.current) {
+        oceanVideoRef.current.muted = true
+        oceanVideoRef.current.defaultMuted = true
+        oceanVideoRef.current.playsInline = true
+        oceanVideoRef.current.setAttribute('playsinline', '')
+        oceanVideoRef.current.setAttribute('webkit-playsinline', '')
+        const p = oceanVideoRef.current.play()
+        if (p !== undefined) {
+          p.catch(() => {})
+        }
+      }
     }
+    playVideoSafe()
+
+    // Unlock video playback on any touch/click/scroll interaction
+    const handleUserInteract = () => {
+      playVideoSafe()
+      window.removeEventListener('pointerdown', handleUserInteract)
+      window.removeEventListener('touchstart', handleUserInteract)
+      window.removeEventListener('scroll', handleUserInteract)
+    }
+    window.addEventListener('pointerdown', handleUserInteract, { passive: true })
+    window.addEventListener('touchstart', handleUserInteract, { passive: true })
+    window.addEventListener('scroll', handleUserInteract, { passive: true })
+
+    // Interactive 3D Parallax & Mouse Tilt Listener
+    const handleMouseMove = (e) => {
+      const cx = (e.clientX / window.innerWidth - 0.5) * 16
+      const cy = (e.clientY / window.innerHeight - 0.5) * 12
+      if (sideStageRef.current) {
+        gsap.to(sideStageRef.current, {
+          rotationY: cx * 0.35,
+          rotationX: -cy * 0.35,
+          transformPerspective: 1400,
+          ease: 'power1.out',
+          duration: 0.6,
+        })
+      }
+      if (shipGroupRef.current) {
+        gsap.to(shipGroupRef.current, {
+          rotationZ: cx * 0.15,
+          ease: 'power1.out',
+          duration: 0.8,
+        })
+      }
+    }
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
 
     // Handle hash landing like #ocean, #services, etc.
     if (window.location.hash) {
@@ -216,6 +262,13 @@ export default function App() {
           }
         }, 400)
       }
+    }
+
+    return () => {
+      window.removeEventListener('pointerdown', handleUserInteract)
+      window.removeEventListener('touchstart', handleUserInteract)
+      window.removeEventListener('scroll', handleUserInteract)
+      window.removeEventListener('mousemove', handleMouseMove)
     }
   }, [])
 
@@ -378,19 +431,6 @@ export default function App() {
     const roadTravel = { progress: 0 }
 
     // ── MASTER UNIFIED COORDINATED TIMELINE ─────────────────────────
-    // Cache for speedometer text — avoid DOM writes when value hasn't changed
-    let _lastSpeedVal = '', _lastSpeedLabel = ''
-    const setSpeed = (val, label) => {
-      if (speedValRef.current && val !== _lastSpeedVal) {
-        speedValRef.current.innerText = val
-        _lastSpeedVal = val
-      }
-      if (speedLabelRef.current && label !== _lastSpeedLabel) {
-        speedLabelRef.current.innerText = label
-        _lastSpeedLabel = label
-      }
-    }
-
     const tl = gsap.timeline({
       scrollTrigger: {
         id: 'masterSceneTrigger',
@@ -398,7 +438,7 @@ export default function App() {
         start: 'top top',
         end: '+=13000',
         pin: true,
-        scrub: 0.3,
+        scrub: 0.6,
         anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
@@ -425,34 +465,57 @@ export default function App() {
           }
 
           if (oceanVideoRef.current) {
-            if (p >= 0.58 && p <= 0.95) {
+            if (p >= 0.55 && p <= 0.96) {
               if (oceanVideoRef.current.paused) oceanVideoRef.current.play().catch(() => {})
-            } else {
-              if (!oceanVideoRef.current.paused) oceanVideoRef.current.pause()
             }
           }
 
           if (p < 0.03) {
-            setSpeed('00', 'TERMINAL YARD')
-          } else if (p < 0.12) {
-            setSpeed('08', 'BAY POSITIONING')
-          } else if (p < 0.16) {
-            setSpeed('16', 'CONTAINER LATCHED')
-          } else if (p < 0.20) {
-            setSpeed(String(Math.round(18 + ((p - 0.16) / 0.04) * 14)), 'SERVICES DISPATCH')
-          } else if (p < 0.33) {
-            setSpeed(String(Math.round(32 + ((p - 0.20) / 0.13) * 23)), 'ROAD FREIGHT')
-          } else if (p < 0.46) {
-            setSpeed('55', 'CAMERA ELEVATION')
-          } else if (p < 0.64) {
-            setSpeed(String(Math.round(60 + ((p - 0.46) / 0.18) * 32)), 'HIGHWAY CORRIDOR')
-          } else if (p < 0.84) {
-            setSpeed(String(Math.round(18 + ((p - 0.64) / 0.20) * 6)), 'OCEAN TRANSIT (KTS)')
-          } else if (p < 0.90) {
-            setSpeed('24', 'DEEP SEA CORRIDOR')
-          } else if (p < 0.97) {
-            setSpeed(String(Math.round(480 + ((p - 0.90) / 0.07) * 60)), 'AIR FREIGHT (KTS)')
-          } else {
+            if (speedValRef.current) speedValRef.current.innerText = '00'
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'TERMINAL YARD'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9482° N | 72.8354° E • BERTH 07'
+          } else if (p >= 0.03 && p < 0.12) {
+            if (speedValRef.current) speedValRef.current.innerText = '08'
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'BAY POSITIONING'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9482° N | 72.8354° E • HOIST ACTIVE'
+          } else if (p >= 0.12 && p < 0.16) {
+            if (speedValRef.current) speedValRef.current.innerText = '16'
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'CONTAINER LATCHED'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9485° N | 72.8359° E • LOCKED'
+          } else if (p >= 0.16 && p < 0.20) {
+            const v = Math.round(18 + ((p - 0.16) / 0.04) * 14)
+            if (speedValRef.current) speedValRef.current.innerText = `${v}`
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'SERVICES DISPATCH'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9520° N | 72.8410° E • DEPARTURE'
+          } else if (p >= 0.20 && p < 0.33) {
+            const v = Math.round(32 + ((p - 0.20) / 0.13) * 23)
+            if (speedValRef.current) speedValRef.current.innerText = `${v}`
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'ROAD FREIGHT'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '19.0760° N | 72.8777° E • NH-48 EXPRESS'
+          } else if (p >= 0.33 && p < 0.46) {
+            if (speedValRef.current) speedValRef.current.innerText = '55'
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'CAMERA ELEVATION'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '19.2183° N | 73.0805° E • CORRIDOR'
+          } else if (p >= 0.46 && p < 0.64) {
+            const v = Math.round(60 + ((p - 0.46) / 0.18) * 32)
+            if (speedValRef.current) speedValRef.current.innerText = `${v}`
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'HIGHWAY CORRIDOR'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '19.8520° N | 73.4100° E • ARTERIAL'
+          } else if (p >= 0.64 && p < 0.84) {
+            const v = Math.round(18 + ((p - 0.64) / 0.20) * 6)
+            if (speedValRef.current) speedValRef.current.innerText = `${v}`
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'OCEAN TRANSIT (KTS)'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '12.9716° N | 80.2520° E • PACIFIC LANE'
+          } else if (p >= 0.84 && p < 0.90) {
+            if (speedValRef.current) speedValRef.current.innerText = '24'
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'DEEP SEA CORRIDOR'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '01.3521° N | 103.8198° E • STRAITS'
+          } else if (p >= 0.90 && p < 0.97) {
+            const v = Math.round(480 + ((p - 0.90) / 0.07) * 60)
+            if (speedValRef.current) speedValRef.current.innerText = `${v}`
+            if (speedLabelRef.current) speedLabelRef.current.innerText = 'AIR FREIGHT (KTS)'
+            if (gpsCoordRef.current) gpsCoordRef.current.innerText = 'FL380 • 40.7128° N | 74.0060° W • NYC'
+          } else if (p >= 0.97) {
             if (speedometerRef.current) speedometerRef.current.style.opacity = '0'
           }
         },
@@ -683,24 +746,27 @@ export default function App() {
     }, 0.425)
     tl.set(servicesBlackFillRef.current, { display: 'none' }, 0.46)
 
-    // quickSetters are created once, reused every frame — GSAP's fastest per-frame API
-    const setTruckX        = gsap.quickSetter(topTruckGroupRef.current, 'x', 'px')
-    const setTruckY        = gsap.quickSetter(topTruckGroupRef.current, 'y', 'px')
-    const setTruckRot      = gsap.quickSetter(topTruckGroupRef.current, 'rotation', 'deg')
-    const setRoadScale     = gsap.quickSetter(roadWorldGroupRef.current, 'scale')
-    const setRoadY         = gsap.quickSetter(roadWorldGroupRef.current, 'y', 'px')
-
+    // ── Phase 5: Overhead Highway Travel & Road Scene [0.47 - 0.64] ───
     tl.to(roadTravel, {
       progress: 1,
       ease: 'none',
       duration: 0.17,
       onUpdate: () => {
         const pt = getRoadPose(roadTravel.progress)
-        setTruckX(pt.x)
-        setTruckY(pt.y)
-        setTruckRot(pt.rot)
-        setRoadScale(pt.cameraScale)
-        setRoadY(-pt.cameraY)
+        if (topTruckGroupRef.current) {
+          gsap.set(topTruckGroupRef.current, {
+            x: pt.x,
+            y: pt.y,
+            rotation: pt.rot,
+          })
+        }
+        if (roadWorldGroupRef.current) {
+          gsap.set(roadWorldGroupRef.current, {
+            transformOrigin: '700px 240px',
+            scale: pt.cameraScale,
+            y: -pt.cameraY,
+          })
+        }
       },
     }, 0.47)
 
@@ -996,12 +1062,18 @@ export default function App() {
       <section className="scene-container" ref={sceneRef} aria-label="Interactive container loading, services, road, and ocean voyage">
         {/* Speedometer Telemetry (Persistent Top-Left) */}
         <div className="uc-speedometer" ref={speedometerRef}>
-          <div className="speed-row">
-            <span className="speed-live-dot" />
-            <span className="speed-number" ref={speedValRef}>30</span>
-            <span className="speed-unit">KM/H</span>
+          <div className="speed-hud-box">
+            <div className="speed-row">
+              <span className="speed-live-dot" />
+              <span className="speed-number" ref={speedValRef}>30</span>
+              <span className="speed-unit">KM/H</span>
+            </div>
+            <span className="speed-label" ref={speedLabelRef}>ROAD TRANSIT</span>
+            <div className="speed-hud-sub">
+              <span className="hud-metric" ref={gpsCoordRef}>18.9482° N | 72.8354° E • BERTH 07</span>
+              <span className="hud-badge">5G SATELLITE LOCK</span>
+            </div>
           </div>
-          <span className="speed-label" ref={speedLabelRef}>ROAD TRANSIT</span>
         </div>
 
         {/* ── UNIFIED SHARED SCENE STAGE (Scenes 1 - 3: Crane, Services, Road) ── */}
@@ -1069,7 +1141,7 @@ export default function App() {
                 {/* 1. Static Crane Base Chassis (Wheels at Y = 900) */}
                 <g id="crane-base-layer" ref={craneBaseRef} transform="translate(100, 128)">
                   <image
-                    href="/assets/logistics/crane-base.png"
+                    href={assetUrl('assets/logistics/crane-base.png')}
                     x="0"
                     y="0"
                     width="1666"
@@ -1081,7 +1153,7 @@ export default function App() {
                 {/* 2. Container resting on ground before pickup (fallback hidden) */}
                 <g id="ground-container-layer" ref={groundContainerRef} transform="translate(1894, 547.5)" opacity="0">
                   <image
-                    href="/assets/logistics/container-side.png"
+                    href={assetUrl('assets/logistics/container-side.png')}
                     x="0"
                     y="0"
                     width="1400"
@@ -1094,7 +1166,7 @@ export default function App() {
                 <g id="boom-pivot-anchor" ref={boomAnchorRef} transform="translate(473, 323)">
                   <g ref={boomGroupRef}>
                     <image
-                      href="/assets/logistics/crane-boom.png"
+                      href={assetUrl('assets/logistics/crane-boom.png')}
                       x="-103.3"
                       y="-119.6"
                       width="2303"
@@ -1106,7 +1178,7 @@ export default function App() {
                     <g transform="translate(2117.4, 118.7)">
                       <g ref={spreaderGroupRef}>
                         <image
-                          href="/assets/logistics/crane-spreader.png"
+                          href={assetUrl('assets/logistics/crane-spreader.png')}
                           x="-712.8"
                           y="-32.8"
                           width="1429"
@@ -1117,7 +1189,7 @@ export default function App() {
                         {/* Container held by spreader */}
                         <g ref={craneContainerRef} transform="translate(-700, 215.2)">
                           <image
-                            href="/assets/logistics/container-side.png"
+                            href={assetUrl('assets/logistics/container-side.png')}
                             x="0"
                             y="0"
                             width="1400"
@@ -1159,7 +1231,7 @@ export default function App() {
                     {/* Container secured to trailer deck */}
                     <g ref={truckContainerRef} transform="translate(22, -1.5)">
                       <image
-                        href="/assets/logistics/container-side.png"
+                        href={assetUrl('assets/logistics/container-side.png')}
                         x="0"
                         y="0"
                         width="1400"
@@ -1170,7 +1242,7 @@ export default function App() {
 
                     {/* Truck & Trailer Chassis */}
                     <image
-                      href="/assets/logistics/truck-side.png"
+                      href={assetUrl('assets/logistics/truck-side.png')}
                       x="0"
                       y="0"
                       width="1842"
@@ -1181,19 +1253,19 @@ export default function App() {
                     {/* Concentric Rotating Wheel Assemblies */}
                     <g id="truck-wheels-layer">
                       <g transform="translate(178, 451.3)">
-                        <image ref={w0Ref} href="/assets/logistics/wheel_trailer.png" x="-48" y="-48" width="96" height="96" />
+                        <image ref={w0Ref} href={assetUrl('assets/logistics/wheel_trailer.png')} x="-48" y="-48" width="96" height="96" />
                       </g>
                       <g transform="translate(342.7, 451.3)">
-                        <image ref={w1Ref} href="/assets/logistics/wheel_trailer.png" x="-48" y="-48" width="96" height="96" />
+                        <image ref={w1Ref} href={assetUrl('assets/logistics/wheel_trailer.png')} x="-48" y="-48" width="96" height="96" />
                       </g>
                       <g transform="translate(506, 451.3)">
-                        <image ref={w2Ref} href="/assets/logistics/wheel_trailer.png" x="-48" y="-48" width="96" height="96" />
+                        <image ref={w2Ref} href={assetUrl('assets/logistics/wheel_trailer.png')} x="-48" y="-48" width="96" height="96" />
                       </g>
                       <g transform="translate(1209.3, 459.2)">
-                        <image ref={w3Ref} href="/assets/logistics/wheel_drive.png" x="-48" y="-48" width="96" height="96" />
+                        <image ref={w3Ref} href={assetUrl('assets/logistics/wheel_drive.png')} x="-48" y="-48" width="96" height="96" />
                       </g>
                       <g transform="translate(1656.8, 446)">
-                        <image ref={w4Ref} href="/assets/logistics/wheel_steer.png" x="-48" y="-48" width="96" height="96" />
+                        <image ref={w4Ref} href={assetUrl('assets/logistics/wheel_steer.png')} x="-48" y="-48" width="96" height="96" />
                       </g>
                     </g>
                   </g>
@@ -1266,7 +1338,7 @@ export default function App() {
                 {/* E. Top-View Truck (Positioned along exact route tangent) */}
                 <g ref={topTruckGroupRef}>
                   <image
-                    href="/assets/logistics/truck-top.png"
+                    href={assetUrl('assets/logistics/truck-top.png')}
                     x="-58"
                     y="-87"
                     width="116"
@@ -1362,17 +1434,42 @@ export default function App() {
               loop
               playsInline
               preload="auto"
-              poster="/assets/logistics/ocean-background.png"
+              poster={assetUrl('assets/logistics/ocean-background.png')}
+              onLoadedData={() => {
+                if (oceanVideoRef.current) {
+                  oceanVideoRef.current.muted = true
+                  oceanVideoRef.current.play().catch(() => {})
+                }
+              }}
+              onCanPlay={() => {
+                if (oceanVideoRef.current) {
+                  oceanVideoRef.current.muted = true
+                  oceanVideoRef.current.play().catch(() => {})
+                }
+              }}
             >
-              <source src="/assets/logistics/oceanbg.mp4" type="video/mp4" />
+              <source src={assetUrl('assets/logistics/oceanbg.mp4')} type="video/mp4" />
             </video>
           </div>
 
           {/* Layer 2 & 3: Container Ship Camera Group */}
           <div className="ocean-ship-group" ref={shipGroupRef}>
+            {/* Marine Radar Sonar Rings */}
+            <div className="ship-sonar-pulse" aria-hidden="true">
+              <span className="sonar-ring sonar-ring-1" />
+              <span className="sonar-ring sonar-ring-2" />
+            </div>
+
+            {/* Ship Propeller Wake Waves */}
+            <div className="ship-wake-trail" aria-hidden="true">
+              <div className="wake-line wake-left" />
+              <div className="wake-foam wake-center" />
+              <div className="wake-line wake-right" />
+            </div>
+
             {/* Overhead Container Ship */}
             <img
-              src="/assets/logistics/ship-top.png"
+              src={assetUrl('assets/logistics/ship-top.png')}
               alt="Container cargo ship from above"
               className="ship-top-img"
             />
@@ -1421,16 +1518,16 @@ export default function App() {
 
           {/* Layer 5: Distant Cloud Atmosphere */}
           <div className="ocean-clouds-distant" ref={cloudsDistantRef}>
-            <img src="/assets/logistics/cloud-far.png" alt="" className="cloud-far-img cloud-far-1" ref={cloudFar1Ref} />
-            <img src="/assets/logistics/cloud-far.png" alt="" className="cloud-far-img cloud-far-2" ref={cloudFar2Ref} />
-            <img src="/assets/logistics/cloud-far.png" alt="" className="cloud-far-img cloud-far-3" ref={cloudFar3Ref} />
+            <img src={assetUrl('assets/logistics/cloud-far.png')} alt="" className="cloud-far-img cloud-far-1" ref={cloudFar1Ref} />
+            <img src={assetUrl('assets/logistics/cloud-far.png')} alt="" className="cloud-far-img cloud-far-2" ref={cloudFar2Ref} />
+            <img src={assetUrl('assets/logistics/cloud-far.png')} alt="" className="cloud-far-img cloud-far-3" ref={cloudFar3Ref} />
           </div>
 
           {/* Layer 6: Foreground Cloud Banks */}
           <div className="ocean-clouds-foreground" ref={cloudsNearRef}>
-            <img src="/assets/logistics/cloud-near.png" alt="" className="cloud-near-img cloud-near-1" ref={cloudNear1Ref} />
-            <img src="/assets/logistics/cloud-near.png" alt="" className="cloud-near-img cloud-near-2" ref={cloudNear2Ref} />
-            <img src="/assets/logistics/cloud-near.png" alt="" className="cloud-near-img cloud-near-3" ref={cloudNear3Ref} />
+            <img src={assetUrl('assets/logistics/cloud-near.png')} alt="" className="cloud-near-img cloud-near-1" ref={cloudNear1Ref} />
+            <img src={assetUrl('assets/logistics/cloud-near.png')} alt="" className="cloud-near-img cloud-near-2" ref={cloudNear2Ref} />
+            <img src={assetUrl('assets/logistics/cloud-near.png')} alt="" className="cloud-near-img cloud-near-3" ref={cloudNear3Ref} />
           </div>
 
           {/* Layer 6.5: Dynamic Left-to-Right Wipe Reveal of Import & Export / APAC Network */}
@@ -1496,13 +1593,21 @@ export default function App() {
 
           {/* Layer 7: Overhead Aircraft Flyover (Nose pointing right) */}
           <div className="ocean-airplane-group" ref={airplaneGroupRef}>
+            {/* Wingtip Contrails & Engine Heat Streams */}
+            <div className="airplane-contrails" aria-hidden="true">
+              <div className="contrail contrail-top" />
+              <div className="contrail contrail-bottom" />
+              <div className="jet-engine-glow engine-top" />
+              <div className="jet-engine-glow engine-bottom" />
+            </div>
+
             <img
-              src="/assets/logistics/plane-top.png"
+              src={assetUrl('assets/logistics/plane-top.png')}
               alt="Cargo transport aircraft"
               className="airplane-img"
             />
             <div className="airplane-mist" ref={airplaneMistRef}>
-              <img src="/assets/logistics/cloud-near.png" alt="" className="cloud-mist-img" />
+              <img src={assetUrl('assets/logistics/cloud-near.png')} alt="" className="cloud-mist-img" />
             </div>
           </div>
         </div>
