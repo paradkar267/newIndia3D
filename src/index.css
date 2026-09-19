@@ -121,11 +121,10 @@ body {
   gap: 0.25rem;
   padding: 0.85rem 1.25rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(224, 86, 38, 0.25);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  background: rgba(250, 247, 242, 0.96);
+  border: 1px solid rgba(224, 86, 38, 0.28);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transform: translateZ(0);
 }
 
 .speed-row {
@@ -525,30 +524,28 @@ body {
   gap: 0.85rem;
   padding: 1.8rem 1.6rem;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background 0.3s ease, box-shadow 0.35s ease;
-  will-change: transform;
+  background: rgba(26, 25, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: transform 0.25s ease, border-color 0.2s ease, background 0.2s ease;
+  transform: translateZ(0);
 }
 
 .service-col:hover {
-  transform: translateY(-8px) scale(1.02);
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(224, 86, 38, 0.5);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(224, 86, 38, 0.2);
+  transform: translateY(-6px) translateZ(0);
+  background: rgba(36, 34, 32, 0.95);
+  border-color: rgba(224, 86, 38, 0.6);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
 }
 
 .service-col-icon {
   color: var(--accent);
   display: flex;
   align-items: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .service-col:hover .service-col-icon {
-  transform: scale(1.12);
+  transform: scale(1.1);
 }
 
 .service-col-title {
@@ -582,21 +579,20 @@ body {
   gap: 0.65rem;
   padding: 0.6rem 1.65rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(30, 29, 28, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--text-white);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   transition: background 0.2s, border-color 0.2s;
+  transform: translateZ(0);
 }
 
 .services-pill:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(45, 43, 40, 1);
   border-color: var(--accent);
 }
 
@@ -915,14 +911,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  background: rgba(10, 28, 48, 0.65);
+  background: rgba(8, 22, 38, 0.92);
   padding: 1.6rem 2rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
-  will-change: transform, opacity;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  transform: translateZ(0);
 }
 
 .ocean-story-col.story-center {

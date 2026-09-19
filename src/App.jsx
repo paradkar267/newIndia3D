@@ -222,29 +222,6 @@ export default function App() {
     window.addEventListener('touchstart', handleUserInteract, { passive: true })
     window.addEventListener('scroll', handleUserInteract, { passive: true })
 
-    // Interactive 3D Parallax & Mouse Tilt Listener
-    const handleMouseMove = (e) => {
-      const cx = (e.clientX / window.innerWidth - 0.5) * 16
-      const cy = (e.clientY / window.innerHeight - 0.5) * 12
-      if (sideStageRef.current) {
-        gsap.to(sideStageRef.current, {
-          rotationY: cx * 0.35,
-          rotationX: -cy * 0.35,
-          transformPerspective: 1400,
-          ease: 'power1.out',
-          duration: 0.6,
-        })
-      }
-      if (shipGroupRef.current) {
-        gsap.to(shipGroupRef.current, {
-          rotationZ: cx * 0.15,
-          ease: 'power1.out',
-          duration: 0.8,
-        })
-      }
-    }
-    window.addEventListener('mousemove', handleMouseMove, { passive: true })
-
     // Handle hash landing like #ocean, #services, etc.
     if (window.location.hash) {
       const targetMap = {
@@ -268,7 +245,6 @@ export default function App() {
       window.removeEventListener('pointerdown', handleUserInteract)
       window.removeEventListener('touchstart', handleUserInteract)
       window.removeEventListener('scroll', handleUserInteract)
-      window.removeEventListener('mousemove', handleMouseMove)
     }
   }, [])
 
@@ -442,30 +418,35 @@ export default function App() {
         start: 'top top',
         end: '+=13000',
         pin: true,
-        scrub: 0.6,
+        scrub: 0.2,
         anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const p = self.progress
 
-          // Bottom Step Tracker updates
+          // Bottom Step Tracker updates with state caching
+          const stepIndex = p < 0.18 ? 0 : p < 0.65 ? 1 : 2
           if (step0Ref.current && step1Ref.current && step2Ref.current) {
-            if (p < 0.18) {
+            if (stepIndex === 0 && !step0Ref.current.classList.contains('active')) {
               step0Ref.current.classList.add('active')
               step1Ref.current.classList.remove('active')
               step2Ref.current.classList.remove('active')
-            } else if (p >= 0.18 && p < 0.65) {
+            } else if (stepIndex === 1 && !step1Ref.current.classList.contains('active')) {
               step0Ref.current.classList.remove('active')
               step1Ref.current.classList.add('active')
               step2Ref.current.classList.remove('active')
-            } else {
+            } else if (stepIndex === 2 && !step2Ref.current.classList.contains('active')) {
               step0Ref.current.classList.remove('active')
               step1Ref.current.classList.remove('active')
               step2Ref.current.classList.add('active')
             }
           }
+
           if (bottomTrackerRef.current) {
-            bottomTrackerRef.current.style.opacity = p >= 0.90 ? '0' : '1'
+            const shouldHide = p >= 0.90
+            const currentOp = bottomTrackerRef.current.style.opacity
+            if (shouldHide && currentOp !== '0') bottomTrackerRef.current.style.opacity = '0'
+            else if (!shouldHide && currentOp !== '1') bottomTrackerRef.current.style.opacity = '1'
           }
 
           if (oceanVideoRef.current) {
@@ -474,53 +455,68 @@ export default function App() {
             }
           }
 
+          let speedVal = '00'
+          let speedLbl = 'TERMINAL YARD'
+          let gpsText = '18.9482° N | 72.8354° E • BERTH 07'
+
           if (p < 0.03) {
-            if (speedValRef.current) speedValRef.current.innerText = '00'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'TERMINAL YARD'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9482° N | 72.8354° E • BERTH 07'
+            speedVal = '00'
+            speedLbl = 'TERMINAL YARD'
+            gpsText = '18.9482° N | 72.8354° E • BERTH 07'
           } else if (p >= 0.03 && p < 0.12) {
-            if (speedValRef.current) speedValRef.current.innerText = '08'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'BAY POSITIONING'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9482° N | 72.8354° E • HOIST ACTIVE'
+            speedVal = '08'
+            speedLbl = 'BAY POSITIONING'
+            gpsText = '18.9482° N | 72.8354° E • HOIST ACTIVE'
           } else if (p >= 0.12 && p < 0.16) {
-            if (speedValRef.current) speedValRef.current.innerText = '16'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'CONTAINER LATCHED'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9485° N | 72.8359° E • LOCKED'
+            speedVal = '16'
+            speedLbl = 'CONTAINER LATCHED'
+            gpsText = '18.9485° N | 72.8359° E • LOCKED'
           } else if (p >= 0.16 && p < 0.20) {
             const v = Math.round(18 + ((p - 0.16) / 0.04) * 14)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'SERVICES DISPATCH'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '18.9520° N | 72.8410° E • DEPARTURE'
+            speedVal = `${v}`
+            speedLbl = 'SERVICES DISPATCH'
+            gpsText = '18.9520° N | 72.8410° E • DEPARTURE'
           } else if (p >= 0.20 && p < 0.33) {
             const v = Math.round(32 + ((p - 0.20) / 0.13) * 23)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'ROAD FREIGHT'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '19.0760° N | 72.8777° E • NH-48 EXPRESS'
+            speedVal = `${v}`
+            speedLbl = 'ROAD FREIGHT'
+            gpsText = '19.0760° N | 72.8777° E • NH-48 EXPRESS'
           } else if (p >= 0.33 && p < 0.46) {
-            if (speedValRef.current) speedValRef.current.innerText = '55'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'CAMERA ELEVATION'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '19.2183° N | 73.0805° E • CORRIDOR'
+            speedVal = '55'
+            speedLbl = 'CAMERA ELEVATION'
+            gpsText = '19.2183° N | 73.0805° E • CORRIDOR'
           } else if (p >= 0.46 && p < 0.64) {
             const v = Math.round(60 + ((p - 0.46) / 0.18) * 32)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'HIGHWAY CORRIDOR'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '19.8520° N | 73.4100° E • ARTERIAL'
+            speedVal = `${v}`
+            speedLbl = 'HIGHWAY CORRIDOR'
+            gpsText = '19.8520° N | 73.4100° E • ARTERIAL'
           } else if (p >= 0.64 && p < 0.84) {
             const v = Math.round(18 + ((p - 0.64) / 0.20) * 6)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'OCEAN TRANSIT (KTS)'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '12.9716° N | 80.2520° E • PACIFIC LANE'
+            speedVal = `${v}`
+            speedLbl = 'OCEAN TRANSIT (KTS)'
+            gpsText = '12.9716° N | 80.2520° E • PACIFIC LANE'
           } else if (p >= 0.84 && p < 0.90) {
-            if (speedValRef.current) speedValRef.current.innerText = '24'
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'DEEP SEA CORRIDOR'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = '01.3521° N | 103.8198° E • STRAITS'
+            speedVal = '24'
+            speedLbl = 'DEEP SEA CORRIDOR'
+            gpsText = '01.3521° N | 103.8198° E • STRAITS'
           } else if (p >= 0.90 && p < 0.97) {
             const v = Math.round(480 + ((p - 0.90) / 0.07) * 60)
-            if (speedValRef.current) speedValRef.current.innerText = `${v}`
-            if (speedLabelRef.current) speedLabelRef.current.innerText = 'AIR FREIGHT (KTS)'
-            if (gpsCoordRef.current) gpsCoordRef.current.innerText = 'FL380 • 40.7128° N | 74.0060° W • NYC'
-          } else if (p >= 0.97) {
-            if (speedometerRef.current) speedometerRef.current.style.opacity = '0'
+            speedVal = `${v}`
+            speedLbl = 'AIR FREIGHT (KTS)'
+            gpsText = 'FL380 • 40.7128° N | 74.0060° W • NYC'
+          }
+
+          if (speedValRef.current && speedValRef.current.innerText !== speedVal) {
+            speedValRef.current.innerText = speedVal
+          }
+          if (speedLabelRef.current && speedLabelRef.current.innerText !== speedLbl) {
+            speedLabelRef.current.innerText = speedLbl
+          }
+          if (gpsCoordRef.current && gpsCoordRef.current.innerText !== gpsText) {
+            gpsCoordRef.current.innerText = gpsText
+          }
+          if (p >= 0.97 && speedometerRef.current && speedometerRef.current.style.opacity !== '0') {
+            speedometerRef.current.style.opacity = '0'
           }
         },
       },
