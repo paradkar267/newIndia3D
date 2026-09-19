@@ -750,7 +750,8 @@ body {
   width: auto;
   display: block;
   z-index: 2;
-  filter: drop-shadow(0 25px 45px rgba(2, 10, 25, 0.7));
+  transform: translateZ(0);
+  filter: drop-shadow(0 12px 16px rgba(2, 10, 25, 0.45));
 }
 
 /* Dynamic Ship Sonar Pulse Animation */
@@ -758,7 +759,7 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) translateZ(0);
   width: 400px;
   height: 400px;
   pointer-events: none;
@@ -772,6 +773,7 @@ body {
   border: 1.5px solid rgba(72, 202, 228, 0.6);
   opacity: 0;
   animation: sonarExpand 3.6s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+  will-change: transform, opacity;
 }
 
 .sonar-ring-2 {
@@ -799,7 +801,7 @@ body {
   position: absolute;
   top: -30%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
   width: 140px;
   height: 160px;
   pointer-events: none;
@@ -814,9 +816,9 @@ body {
   transform: translateX(-50%);
   width: 32px;
   height: 100%;
-  background: radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.8) 0%, rgba(160, 230, 255, 0.3) 50%, transparent 80%);
-  filter: blur(4px);
+  background: radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.85) 0%, rgba(160, 230, 255, 0.3) 50%, transparent 80%);
   animation: wakeBubble 1.4s infinite ease-in-out;
+  will-change: transform, opacity;
 }
 
 .wake-line {
@@ -825,7 +827,6 @@ body {
   width: 3px;
   height: 90%;
   background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
-  filter: blur(1px);
 }
 
 .wake-left {

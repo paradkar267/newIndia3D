@@ -347,7 +347,7 @@ export default function App() {
       oceanLayerRef.current.style.webkitMaskImage = ''
       oceanLayerRef.current.style.maskImage = ''
     }
-    gsap.set(oceanBgRef.current, { scale: 1.15, y: -20 })
+    gsap.set(oceanBgRef.current, { y: 0 })
     gsap.set(shipGroupRef.current, {
       x: 0,
       y: 0,
@@ -409,6 +409,7 @@ export default function App() {
     }
 
     const roadTravel = { progress: 0 }
+    let videoStarted = false
 
     // ── MASTER UNIFIED COORDINATED TIMELINE ─────────────────────────
     const tl = gsap.timeline({
@@ -449,9 +450,10 @@ export default function App() {
             else if (!shouldHide && currentOp !== '1') bottomTrackerRef.current.style.opacity = '1'
           }
 
-          if (oceanVideoRef.current) {
-            if (p >= 0.55 && p <= 0.96) {
-              if (oceanVideoRef.current.paused) oceanVideoRef.current.play().catch(() => {})
+          if (oceanVideoRef.current && p >= 0.55 && p <= 0.96) {
+            if (!videoStarted) {
+              videoStarted = true
+              oceanVideoRef.current.play().catch(() => {})
             }
           }
 
@@ -852,7 +854,6 @@ export default function App() {
     }, 0.70)
 
     tl.to(oceanBgRef.current, {
-      scale: 1.10,
       y: 10,
       duration: 0.08,
       ease: 'none',
@@ -876,8 +877,7 @@ export default function App() {
     }, 0.78)
 
     tl.to(oceanBgRef.current, {
-      scale: 1.05,
-      y: 25,
+      y: 20,
       duration: 0.07,
       ease: 'none',
     }, 0.78)
@@ -908,7 +908,6 @@ export default function App() {
     // Introduce distant clouds near edges at low opacity (doesn't cover copy prematurely)
     tl.to([cloudFar1Ref.current, cloudFar2Ref.current, cloudFar3Ref.current], {
       opacity: 0.35,
-      scale: 1.0,
       duration: 0.06,
       ease: 'power1.out',
     }, 0.80)
@@ -930,8 +929,7 @@ export default function App() {
     }, 0.85)
 
     tl.to(oceanBgRef.current, {
-      scale: 1.02,
-      y: 40,
+      y: 35,
       duration: 0.05,
       ease: 'none',
     }, 0.85)
@@ -939,7 +937,6 @@ export default function App() {
     // Distant cloud coverage increases
     tl.to([cloudFar1Ref.current, cloudFar2Ref.current, cloudFar3Ref.current], {
       opacity: 0.85,
-      scale: 1.15,
       duration: 0.05,
       ease: 'power1.inOut',
     }, 0.85)
