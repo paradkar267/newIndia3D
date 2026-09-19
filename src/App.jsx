@@ -307,8 +307,10 @@ export default function App() {
       gsap.set(airplaneGroupRef.current, { display: 'none' })
       gsap.set([cloudsDistantRef.current, cloudsNearRef.current], { display: 'none' })
       if (aircraftRevealRef.current) {
-        aircraftRevealRef.current.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)'
-        aircraftRevealRef.current.style.webkitClipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)'
+        aircraftRevealRef.current.style.maskImage = 'none'
+        aircraftRevealRef.current.style.webkitMaskImage = 'none'
+        aircraftRevealRef.current.style.clipPath = 'none'
+        aircraftRevealRef.current.style.webkitClipPath = 'none'
         gsap.set(aircraftRevealRef.current, { opacity: 1, display: 'flex' })
       }
       return
@@ -392,8 +394,10 @@ export default function App() {
     })
     gsap.set(airplaneMistRef.current, { opacity: 0, x: '-20%' })
     if (aircraftRevealRef.current) {
-      aircraftRevealRef.current.style.clipPath = 'polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)'
-      aircraftRevealRef.current.style.webkitClipPath = 'polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)'
+      aircraftRevealRef.current.style.maskImage = 'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 0%)'
+      aircraftRevealRef.current.style.webkitMaskImage = 'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 0%)'
+      aircraftRevealRef.current.style.clipPath = 'none'
+      aircraftRevealRef.current.style.webkitClipPath = 'none'
       gsap.set(aircraftRevealRef.current, { opacity: 1, display: 'flex' })
     }
 
@@ -973,14 +977,6 @@ export default function App() {
       ease: 'power1.inOut',
     }, 0.90)
 
-    // Mist drifting in front of aircraft
-    tl.to(airplaneMistRef.current, {
-      opacity: 0.75,
-      x: '60%',
-      duration: 0.075,
-      ease: 'none',
-    }, 0.90)
-
     // Near cloud bank accompanying plane pass
     tl.to(cloudNear3Ref.current, {
       opacity: 0.95,
@@ -990,7 +986,7 @@ export default function App() {
       ease: 'power1.inOut',
     }, 0.90)
 
-    // Dynamic Left-to-Right Wipe Reveal of Import & Export Section following the airplane
+    // Dynamic Left-to-Right Feathered Reveal of Import & Export Section following the airplane
     const wipeObj = { pct: 0 }
     tl.to(wipeObj, {
       pct: 100,
@@ -999,8 +995,20 @@ export default function App() {
       onUpdate: () => {
         if (aircraftRevealRef.current) {
           const p = wipeObj.pct
-          aircraftRevealRef.current.style.clipPath = `polygon(0% 0%, ${p}% 0%, ${p}% 100%, 0% 100%)`
-          aircraftRevealRef.current.style.webkitClipPath = `polygon(0% 0%, ${p}% 0%, ${p}% 100%, 0% 100%)`
+          if (p <= 0) {
+            aircraftRevealRef.current.style.maskImage = 'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 0%)'
+            aircraftRevealRef.current.style.webkitMaskImage = 'linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 0%)'
+          } else if (p >= 100) {
+            aircraftRevealRef.current.style.maskImage = 'none'
+            aircraftRevealRef.current.style.webkitMaskImage = 'none'
+          } else {
+            const feather = 18
+            const solidEnd = Math.max(0, p - feather)
+            const fadeEnd = Math.min(100, p + feather)
+            const mask = `linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) ${solidEnd}%, rgba(0,0,0,0) ${fadeEnd}%)`
+            aircraftRevealRef.current.style.maskImage = mask
+            aircraftRevealRef.current.style.webkitMaskImage = mask
+          }
         }
       },
     }, 0.90)
@@ -1606,9 +1614,6 @@ export default function App() {
               alt="Cargo transport aircraft"
               className="airplane-img"
             />
-            <div className="airplane-mist" ref={airplaneMistRef}>
-              <img src={assetUrl('assets/logistics/cloud-near.png')} alt="" className="cloud-mist-img" />
-            </div>
           </div>
         </div>
 

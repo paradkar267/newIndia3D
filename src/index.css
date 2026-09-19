@@ -1031,7 +1031,7 @@ body {
   width: clamp(750px, 95vw, 1600px);
 }
 
-/* Layer 6.5: Dynamic Left-to-Right Wipe Reveal of Import & Export / APAC Network */
+/* Layer 6.5: Dynamic Left-to-Right Feathered Reveal of Import & Export / APAC Network */
 .aircraft-wipe-reveal {
   position: absolute;
   inset: 0;
@@ -1040,9 +1040,7 @@ body {
   background: var(--bg-warm);
   z-index: 38;
   overflow: hidden;
-  clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
-  -webkit-clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
-  will-change: clip-path;
+  will-change: mask-image, -webkit-mask-image, opacity;
   pointer-events: auto;
 }
 
@@ -1267,25 +1265,6 @@ body {
   z-index: 2;
   position: relative;
   filter: drop-shadow(0 20px 35px rgba(0, 15, 40, 0.45));
-}
-
-.airplane-mist {
-  position: absolute;
-  top: -20%;
-  left: -10%;
-  width: 120%;
-  height: 140%;
-  pointer-events: none;
-  z-index: 45;
-  opacity: 0.6;
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-.cloud-mist-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 /* ─── SCENE 6: Light Trust & Network Section (Post-Flyover Base Layer) ─── */
