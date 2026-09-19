@@ -102,8 +102,6 @@ body {
   min-height: 680px;
   overflow: hidden;
   background: linear-gradient(180deg, #FAF7F2 0%, #F5F2EB 60%, #ECE6DC 82%, #E2DAD0 100%);
-  contain: layout style paint;
-  will-change: transform;
 }
 
 /* ─── Persistent Speedometer Telemetry (Top Left) ────────── */
@@ -174,7 +172,6 @@ body {
   height: 100%;
   background: transparent;
   overflow: hidden;
-  contain: layout style;
   transform: translateZ(0);
 }
 
