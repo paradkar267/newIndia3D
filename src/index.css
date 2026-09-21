@@ -677,94 +677,6 @@ body {
   /* ponytail: drop-shadow filter removed to prevent 60ms Gaussian blur spikes on 1024x1536 PNG during scroll */
 }
 
-/* Dynamic Ship Sonar Pulse Animation */
-.ship-sonar-pulse {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) translateZ(0);
-  width: 400px;
-  height: 400px;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-}
-
-.sonar-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1.5px solid rgba(72, 202, 228, 0.6);
-  opacity: 0;
-  animation: sonarExpand 3.6s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
-}
-
-.sonar-ring-2 {
-  animation-delay: 1.8s;
-}
-
-@keyframes sonarExpand {
-  0% {
-    transform: scale(0.35);
-    opacity: 0.9;
-    border-color: rgba(72, 202, 228, 0.8);
-  }
-  50% {
-    opacity: 0.45;
-  }
-  100% {
-    transform: scale(2.8);
-    opacity: 0;
-    border-color: rgba(72, 202, 228, 0);
-  }
-}
-
-/* Ship Propeller Wake Foam Trail */
-.ship-wake-trail {
-  position: absolute;
-  top: -30%;
-  left: 50%;
-  transform: translateX(-50%) translateZ(0);
-  width: 140px;
-  height: 160px;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.75;
-}
-
-.wake-foam {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 100%;
-  background: radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.85) 0%, rgba(160, 230, 255, 0.3) 50%, transparent 80%);
-}
-
-.wake-line {
-  position: absolute;
-  top: 10%;
-  width: 3px;
-  height: 90%;
-  background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
-}
-
-.wake-left {
-  left: 28%;
-  transform: rotate(-18deg);
-}
-
-.wake-right {
-  right: 28%;
-  transform: rotate(18deg);
-}
-
-@keyframes wakeBubble {
-  0%, 100% { opacity: 0.6; transform: translateX(-50%) scaleY(0.9); }
-  50% { opacity: 0.95; transform: translateX(-50%) scaleY(1.1); }
-}
-
 /* Layer 4A: Bold Centered Editorial Headline */
 .ocean-headline {
   position: absolute;
@@ -813,65 +725,87 @@ body {
   display: block;
 }
 
-/* Layer 4B: Side & Center Feature Story Blocks in Open Ocean */
+/* Layer 4B: 4 Quadrant Narrative Feature Blocks in Open Ocean */
 .ocean-story-blocks {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 clamp(2.5rem, 6vw, 7.5rem);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  padding: clamp(3.5rem, 8vh, 7rem) clamp(3rem, 7vw, 8.5rem);
+  box-sizing: border-box;
   z-index: 25;
   pointer-events: none;
   will-change: opacity;
 }
 
-.ocean-story-col {
-  max-width: 320px;
+.ocean-story-card {
+  max-width: 360px;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  background: rgba(8, 22, 38, 0.92);
-  padding: 1.6rem 2rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-  transform: translateZ(0);
+  gap: 0.5rem;
+  pointer-events: auto;
+  will-change: transform, opacity;
 }
 
-.ocean-story-col.story-center {
-  position: absolute;
-  bottom: 8%;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 440px;
-  text-align: center;
+.story-card-tl {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  justify-self: start;
+}
+
+.story-card-tr {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  justify-self: end;
+  text-align: right;
+  align-items: flex-end;
+}
+
+.story-card-bl {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: end;
+  justify-self: start;
+}
+
+.story-card-br {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  justify-self: end;
+  text-align: right;
+  align-items: flex-end;
+}
+
+.story-card-icon {
+  margin-bottom: 0.25rem;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 10px rgba(72, 202, 228, 0.5));
 }
 
-.story-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #48CAE4;
-}
-
-.story-title {
-  font-size: 1.15rem;
+.story-card-title {
+  font-size: clamp(1.05rem, 1.25vw, 1.35rem);
   font-weight: 800;
   color: #FFFFFF;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   line-height: 1.25;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
 }
 
-.story-desc {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
+.story-card-desc {
+  font-size: clamp(0.82rem, 0.88vw, 0.94rem);
+  color: rgba(255, 255, 255, 0.88);
   line-height: 1.55;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  max-width: 330px;
 }
 
 /* Layer 5: Distant Cloud Atmosphere */
@@ -1514,13 +1448,16 @@ body {
     inset: auto;
     width: 100%;
     height: auto;
+    display: flex;
     flex-direction: column;
-    padding: 0;
+    padding: 2rem 1.5rem;
     gap: 1.5rem;
   }
 
-  .ocean-story-col {
+  .ocean-story-card {
     max-width: 100%;
+    text-align: left;
+    align-items: flex-start;
   }
 
   .trust-network-section {

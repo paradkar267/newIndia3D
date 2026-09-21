@@ -155,12 +155,12 @@ export default function App() {
   const oceanBgRef            = useRef(null)
   const oceanVideoRef         = useRef(null)
   const shipGroupRef          = useRef(null)
-  const shipSonarRef          = useRef(null)
   const oceanHeadlineRef      = useRef(null)
   const storyBlocksRef        = useRef(null)
-  const storyLeftRef          = useRef(null)
-  const storyCenterRef        = useRef(null)
-  const storyRightRef         = useRef(null)
+  const storyCard1Ref         = useRef(null) // Top-Left: ONE POINT OF CONTACT
+  const storyCard2Ref         = useRef(null) // Top-Right: FULL SUPPLY CHAIN VISIBILITY
+  const storyCard3Ref         = useRef(null) // Bottom-Left: COMPLIANCE YOU CAN TRUST
+  const storyCard4Ref         = useRef(null) // Bottom-Right: COMPETITIVE TRANSPARENT PRICING
   const cloudsDistantRef      = useRef(null)
   const cloudFar1Ref          = useRef(null)
   const cloudFar2Ref          = useRef(null)
@@ -318,15 +318,15 @@ export default function App() {
 
     // Shared Black Surface & Road Layers (Hidden during Phase 1 Terminal Yard)
     gsap.set(sharedRoadWrapRef.current, { y: '100%', opacity: 0, display: 'block' })
-    gsap.set(roadWorldGroupRef.current, { transformOrigin: '700px 240px', scale: 1.45, y: 0 })
-    gsap.set(curvedRoadLayerRef.current, { y: 0 })
+    gsap.set(roadWorldGroupRef.current, { transformOrigin: '704px 240px', scale: 1.45, y: 0 })
+    gsap.set(curvedRoadLayerRef.current, { opacity: 1, y: 0 })
     if (servicesBlackFillRef.current) {
       servicesBlackFillRef.current.setAttribute('d', 'M -400 95 L 2400 95 L 2400 1200 L -400 1200 Z')
     }
     gsap.set(servicesBlackFillRef.current, { opacity: 1, display: 'block' })
     gsap.set(roadShoulderRef.current, { opacity: 0 })
     gsap.set(overheadCenterlineRef.current, { opacity: 0 })
-    gsap.set(topTruckGroupRef.current, { opacity: 0, transformOrigin: '50% 50%', x: 450, y: 240, rotation: 90 })
+    gsap.set(topTruckGroupRef.current, { opacity: 0, transformOrigin: '50% 50%', x: 450, y: 240, rotation: 90, scale: 1 })
 
     // Scene 3 Content
     gsap.set(editorialLeftRef.current, { opacity: 0, x: -60, y: 0, display: 'block' })
@@ -334,26 +334,24 @@ export default function App() {
     gsap.set(milestone1Ref.current, { opacity: 0, y: 25 })
     gsap.set(milestone2Ref.current, { opacity: 0, y: 25 })
 
-    // Ocean & Air Initial States (Hidden during Crane, Services, Road)
+    // Ocean & Air Initial States (Enters from bottom in lockstep with road slide)
     gsap.set(oceanLayerRef.current, { y: '100%', opacity: 1, display: 'block', force3D: true })
     if (oceanLayerRef.current) {
       oceanLayerRef.current.style.webkitMaskImage = ''
       oceanLayerRef.current.style.maskImage = ''
     }
     gsap.set(oceanBgRef.current, { y: 0, force3D: true })
-    gsap.set(shipSonarRef.current, { opacity: 0 })
     gsap.set(shipGroupRef.current, {
       x: 0,
-      y: 0,
-      scale: 1.5, // ponytail: 1.5 covers >100% viewport height for close-up deck framing without 2.85x rasterization stall
-      transformOrigin: '50% 50%',
+      y: -120,
+      scale: 2.2,
+      transformOrigin: '50% 39.0625%',
       force3D: true,
     })
-    gsap.set(oceanHeadlineRef.current, { opacity: 0, y: 40, scale: 0.96 })
-    gsap.set(storyBlocksRef.current, { opacity: 0 })
-    gsap.set(storyLeftRef.current, { opacity: 0, x: -40 })
-    gsap.set(storyCenterRef.current, { opacity: 0, y: 40 })
-    gsap.set(storyRightRef.current, { opacity: 0, x: 40 })
+    gsap.set(oceanHeadlineRef.current, { opacity: 0, y: 35, scale: 0.94 })
+    gsap.set(storyBlocksRef.current, { opacity: 0, display: 'grid' })
+    gsap.set([storyCard1Ref.current, storyCard3Ref.current], { opacity: 0, x: -35 })
+    gsap.set([storyCard2Ref.current, storyCard4Ref.current], { opacity: 0, x: 35 })
     gsap.set([cloudFar1Ref.current, cloudFar2Ref.current, cloudFar3Ref.current], { opacity: 0, scale: 0.9 })
     gsap.set([cloudNear1Ref.current, cloudNear2Ref.current, cloudNear3Ref.current], { opacity: 0, scale: 0.85, x: -40 })
     gsap.set(airplaneGroupRef.current, {
@@ -381,7 +379,7 @@ export default function App() {
       // 1. Horizontal straight entry & Camera Zoom Out: t in [0, 0.20]
       if (t <= 0.20) {
         const u = t / 0.20
-        const x = 450 + u * (800 - 450)
+        const x = 450 + u * (704 - 450)
         const y = 240
         const cameraScale = 1.45 - u * 0.45 // 1.45 down to 1.0
         return { x, y, rot: 90, cameraScale, cameraY: 0 }
@@ -390,16 +388,16 @@ export default function App() {
       if (t <= 0.48) {
         const u = (t - 0.20) / 0.28
         const theta = -Math.PI / 2 + u * (Math.PI / 2) // -90 deg to 0 deg
-        const x = 800 + 256 * Math.cos(theta)
+        const x = 704 + 256 * Math.cos(theta)
         const y = 496 + 256 * Math.sin(theta)
         const rot = 90 + u * 90 // 90 deg -> 180 deg
         return { x, y, rot, cameraScale: 1.0, cameraY: 0 }
       }
       // 3. Vertical highway travel with camera pan down: t in (0.48, 1.0]
       const u = (t - 0.48) / 0.52
-      const x = 1056
+      const x = 960
       const y = 496 + u * 1050
-      const cameraY = u * 540
+      const cameraY = u * 680
       return { x, y, rot: 180, cameraScale: 1.0, cameraY }
     }
 
@@ -687,7 +685,7 @@ export default function App() {
         }
         if (roadWorldGroupRef.current) {
           gsap.set(roadWorldGroupRef.current, {
-            transformOrigin: '700px 240px',
+            transformOrigin: '704px 240px',
             scale: pt.cameraScale,
             y: -pt.cameraY,
           })
@@ -738,144 +736,132 @@ export default function App() {
       duration: 0.15,
     }, 0.54)
 
-    // ── Phase 6: Road-to-Ocean Handoff [0.64 - 0.70] ───
-    // Outgoing Road content slides up and fades as Ocean rises smoothly from below
-    tl.to([editorialLeftRef.current, milestonesRightRef.current], {
-      opacity: 0,
-      y: -60,
-      duration: 0.05,
-      ease: 'power2.in',
+    // ── Phase 6: Road-to-Ocean Synchronized Section Slide [0.64 - 0.71] ───
+    // Road scene slides smoothly UP out of the screen (0% -> -100%)
+    tl.to(sharedRoadWrapRef.current, {
+      y: '-100%',
+      duration: 0.07,
+      ease: 'none',
+      force3D: true,
     }, 0.64)
 
-    tl.to(sharedRoadWrapRef.current, {
-      y: '-80%',
-      opacity: 0,
-      duration: 0.06,
-      ease: 'power2.in',
+    tl.to([editorialLeftRef.current, milestonesRightRef.current], {
+      y: '-100vh',
+      opacity: 0.2,
+      duration: 0.07,
+      ease: 'none',
+    }, 0.64)
+
+    // Ocean scene enters smoothly from below in exact lockstep (100% -> 0%)
+    tl.to(oceanLayerRef.current, {
+      y: '0%',
+      duration: 0.07,
+      ease: 'none',
       force3D: true,
     }, 0.64)
 
     tl.set([editorialLeftRef.current, milestonesRightRef.current, sharedRoadWrapRef.current], {
       display: 'none',
-    }, 0.70)
+    }, 0.71)
 
-    // Ocean layer rises smoothly up from the bottom directly underneath the road
-    tl.to(oceanLayerRef.current, {
-      y: '0%',
-      duration: 0.06,
-      ease: 'power2.out',
-      force3D: true,
-    }, 0.64)
-
-    // ── Phase 7: Step 1 & 2 - Deck Close-Up Pullback to Full Ship & Heading Reveal [0.70 - 0.78] ───
-    // Start close to the container deck: ship length extends above and below viewport, pointing DOWN on centerline
-    // Pull back gradually towards 1 viewport height
+    // ── Phase 7: Step 1 & 2 - Deck Close-Up Pullback to Full Ship & Heading Reveal [0.71 - 0.79] ───
+    // Start close to the container deck: centered on white container slot
+    // Ship sails steadily forward/downward along centerline; camera pulls back smoothly
     tl.to(shipGroupRef.current, {
-      scale: 1.0,
-      x: 0,
-      y: 0,
+      scale: 1.15,
+      y: 75,
       duration: 0.08,
       ease: 'power1.inOut',
       force3D: true,
-    }, 0.70)
+    }, 0.71)
 
     tl.to(oceanBgRef.current, {
-      y: 10,
+      y: 15,
       duration: 0.08,
       ease: 'none',
       force3D: true,
-    }, 0.70)
+    }, 0.71)
 
-    // Reveal heading and sonar pulse as whole ship becomes visible
+    // Reveal heading as whole ship superstructure becomes visible
     tl.to(oceanHeadlineRef.current, {
       opacity: 1,
       y: 0,
       scale: 1,
       duration: 0.035,
       ease: 'power2.out',
-    }, 0.74)
+    }, 0.73)
 
-    tl.to(shipSonarRef.current, {
-      opacity: 1,
-      duration: 0.04,
-      ease: 'power2.out',
-    }, 0.75)
-
-    // ── Phase 8: Step 3 - Wide Ocean Pullback & Feature Copy [0.78 - 0.85] ───
-    // Pull back from ~1 viewport height to 38-42% viewport height
+    // ── Phase 8: Step 3 - Wide Ocean Pullback & 4 Quadrant Feature Cards [0.78 - 0.86] ───
+    // Pull back from ~1.15x to wide aerial 0.42x perspective (full vessel cruising in deep ocean)
     tl.to(shipGroupRef.current, {
-      scale: 0.40,
+      scale: 0.42,
+      y: 185,
       duration: 0.07,
       ease: 'power1.inOut',
       force3D: true,
     }, 0.78)
 
     tl.to(oceanBgRef.current, {
-      y: 20,
+      y: 28,
       duration: 0.07,
       ease: 'none',
       force3D: true,
     }, 0.78)
 
-    // Headline leaves after readable interval
+    // Headline leaves cleanly as camera pulls into wide view
     tl.to(oceanHeadlineRef.current, {
       opacity: 0,
-      y: -30,
+      y: -35,
       duration: 0.03,
       ease: 'power2.in',
     }, 0.795)
 
-    // Feature copy reveals around ship in open ocean
-    tl.set(storyBlocksRef.current, { opacity: 1 }, 0.80)
-    tl.to([storyLeftRef.current, storyRightRef.current], {
+    // 4 Quadrant Feature Cards reveal around ship in open ocean (matching video layout)
+    tl.set(storyBlocksRef.current, { opacity: 1 }, 0.81)
+    tl.to([storyCard1Ref.current, storyCard3Ref.current], {
       opacity: 1,
       x: 0,
       duration: 0.035,
       ease: 'power2.out',
-    }, 0.805)
-    tl.to(storyCenterRef.current, {
+    }, 0.815)
+    tl.to([storyCard2Ref.current, storyCard4Ref.current], {
       opacity: 1,
-      y: 0,
+      x: 0,
       duration: 0.035,
       ease: 'power2.out',
-    }, 0.805)
+    }, 0.815)
 
-    // Introduce distant clouds near edges at low opacity (doesn't cover copy prematurely)
+    // Introduce distant clouds near edges at low opacity
     tl.to([cloudFar1Ref.current, cloudFar2Ref.current, cloudFar3Ref.current], {
-      opacity: 0.35,
+      opacity: 0.4,
       duration: 0.06,
       ease: 'power1.out',
-    }, 0.80)
+    }, 0.81)
 
-    // ── Phase 9: Step 4 - Rise into Clouds & Receding Ship [0.85 - 0.90] ───
-    // Feature copy leaves
-    tl.to([storyLeftRef.current, storyRightRef.current, storyCenterRef.current], {
+    // ── Phase 9: Step 4 - Rise into Clouds & Receding Ship [0.86 - 0.91] ───
+    // Feature cards leave
+    tl.to([storyCard1Ref.current, storyCard2Ref.current, storyCard3Ref.current, storyCard4Ref.current], {
       opacity: 0,
       y: -25,
       duration: 0.025,
       ease: 'power2.in',
-    }, 0.85)
+    }, 0.86)
 
-    tl.to(shipSonarRef.current, {
-      opacity: 0,
-      duration: 0.03,
-      ease: 'power2.in',
-    }, 0.85)
-
-    // Ship reduces towards 14-16% viewport height (scale: 0.15)
+    // Ship reduces towards distant horizon (scale: 0.16)
     tl.to(shipGroupRef.current, {
-      scale: 0.15,
+      scale: 0.16,
+      y: 270,
       duration: 0.05,
       ease: 'power1.inOut',
       force3D: true,
-    }, 0.85)
+    }, 0.86)
 
     tl.to(oceanBgRef.current, {
-      y: 35,
+      y: 42,
       duration: 0.05,
       ease: 'none',
       force3D: true,
-    }, 0.85)
+    }, 0.86)
 
     // Distant cloud coverage increases
     tl.to([cloudFar1Ref.current, cloudFar2Ref.current, cloudFar3Ref.current], {
@@ -1210,7 +1196,7 @@ export default function App() {
                   {/* A. Outer Crisp White Edge Shoulders */}
                   <path
                     ref={roadShoulderRef}
-                    d="M -400 240 L 2400 240 M 800 240 A 256 256 0 0 1 1056 496 L 1056 3600"
+                    d="M -400 240 L 2400 240 M 704 240 A 256 256 0 0 1 960 496 L 960 3600"
                     fill="none"
                     stroke="#FFFFFF"
                     strokeWidth="306"
@@ -1220,7 +1206,7 @@ export default function App() {
 
                   {/* B. Persistent Opaque Black Road Bed */}
                   <path
-                    d="M -400 240 L 2400 240 M 800 240 A 256 256 0 0 1 1056 496 L 1056 3600"
+                    d="M -400 240 L 2400 240 M 704 240 A 256 256 0 0 1 960 496 L 960 3600"
                     fill="none"
                     stroke="#141312"
                     strokeWidth="290"
@@ -1238,7 +1224,7 @@ export default function App() {
                   {/* D. Route Dashed Centerline */}
                   <path
                     ref={overheadCenterlineRef}
-                    d="M -400 240 L 800 240 A 256 256 0 0 1 1056 496 L 1056 3600"
+                    d="M -400 240 L 704 240 A 256 256 0 0 1 960 496 L 960 3600"
                     fill="none"
                     stroke="rgba(255, 255, 255, 0.75)"
                     strokeWidth="5"
@@ -1248,7 +1234,7 @@ export default function App() {
 
                   {/* D2. Through-road continuing centerline to the right */}
                   <path
-                    d="M 800 240 L 2400 240"
+                    d="M 704 240 L 2400 240"
                     fill="none"
                     stroke="rgba(255, 255, 255, 0.35)"
                     strokeWidth="5"
@@ -1261,7 +1247,7 @@ export default function App() {
                 <g ref={topTruckGroupRef}>
                   <image
                     href={assetUrl('assets/logistics/truck-top.png')}
-                    x="-58"
+                    x="-55"
                     y="-87"
                     width="116"
                     height="174"
@@ -1376,19 +1362,6 @@ export default function App() {
 
           {/* Layer 2 & 3: Container Ship Camera Group */}
           <div className="ocean-ship-group" ref={shipGroupRef}>
-            {/* Marine Radar Sonar Rings */}
-            <div className="ship-sonar-pulse" ref={shipSonarRef} aria-hidden="true">
-              <span className="sonar-ring sonar-ring-1" />
-              <span className="sonar-ring sonar-ring-2" />
-            </div>
-
-            {/* Ship Propeller Wake Waves */}
-            <div className="ship-wake-trail" aria-hidden="true">
-              <div className="wake-line wake-left" />
-              <div className="wake-foam wake-center" />
-              <div className="wake-line wake-right" />
-            </div>
-
             {/* Overhead Container Ship */}
             <img
               src={assetUrl('assets/logistics/ship-top.png')}
@@ -1411,29 +1384,69 @@ export default function App() {
             </h2>
           </div>
 
-          {/* Layer 4B: Side Narrative Story Blocks in Open Ocean */}
+          {/* Layer 4B: 4 Quadrant Narrative Feature Blocks in Open Ocean */}
           <div className="ocean-story-blocks" ref={storyBlocksRef}>
-            <div className="ocean-story-col story-left" ref={storyLeftRef}>
-              <span className="story-eyebrow">GLOBAL COMPLIANCE</span>
-              <h3 className="story-title">COMPLIANCE YOU CAN TRUST</h3>
-              <p className="story-desc">
-                Our rigorous maritime compliance protocols ensure your cargo meets every international standard without port delays.
+            {/* Top-Left: ONE POINT OF CONTACT */}
+            <div className="ocean-story-card story-card-tl" ref={storyCard1Ref}>
+              <div className="story-card-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#48CAE4" strokeWidth="1.8">
+                  <circle cx="12" cy="12" r="10" strokeDasharray="3 3" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" fill="#48CAE4" />
+                  <line x1="12" y1="2" x2="12" y2="5" />
+                  <line x1="12" y1="19" x2="12" y2="22" />
+                  <line x1="2" y1="12" x2="5" y2="12" />
+                  <line x1="19" y1="12" x2="22" y2="12" />
+                </svg>
+              </div>
+              <h3 className="story-card-title">ONE POINT OF CONTACT</h3>
+              <p className="story-card-desc">
+                No more chasing multiple freight forwarders. One dedicated team manages your entire logistics pipeline from origin to destination.
               </p>
             </div>
 
-            <div className="ocean-story-col story-center" ref={storyCenterRef}>
-              <span className="story-eyebrow">24/7 DISPATCH</span>
-              <h3 className="story-title">FAST ISSUE RESOLUTION</h3>
-              <p className="story-desc">
-                Dedicated voyage control specialists resolving customs exceptions in real time.
+            {/* Top-Right: FULL SUPPLY CHAIN VISIBILITY */}
+            <div className="ocean-story-card story-card-tr" ref={storyCard2Ref}>
+              <div className="story-card-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#48CAE4" strokeWidth="1.8">
+                  <rect x="2" y="14" width="4" height="7" rx="1" />
+                  <rect x="9" y="9" width="4" height="12" rx="1" />
+                  <rect x="16" y="4" width="4" height="17" rx="1" />
+                  <path d="M4 10 L10 5 L16 3 L22 2" stroke="#48CAE4" strokeDasharray="2 2" />
+                </svg>
+              </div>
+              <h3 className="story-card-title">FULL SUPPLY CHAIN VISIBILITY</h3>
+              <p className="story-card-desc">
+                End-to-end tracking with live container telemetry, automated milestone alerts, and predictive arrival forecasts.
               </p>
             </div>
 
-            <div className="ocean-story-col story-right" ref={storyRightRef}>
-              <span className="story-eyebrow">DIRECT CARRIER RATES</span>
-              <h3 className="story-title">COMPETITIVE TRANSPARENT PRICING</h3>
-              <p className="story-desc">
-                Direct ocean volume allocations with transparent voyage milestones and zero hidden bunker surcharges.
+            {/* Bottom-Left: COMPLIANCE YOU CAN TRUST */}
+            <div className="ocean-story-card story-card-bl" ref={storyCard3Ref}>
+              <div className="story-card-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#48CAE4" strokeWidth="1.8">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <polyline points="9 12 11 14 15 9" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h3 className="story-card-title">COMPLIANCE YOU CAN TRUST</h3>
+              <p className="story-card-desc">
+                In-house licensed customs brokerage and global compliance handling cross-border clearance without costly delays.
+              </p>
+            </div>
+
+            {/* Bottom-Right: COMPETITIVE TRANSPARENT PRICING */}
+            <div className="ocean-story-card story-card-br" ref={storyCard4Ref}>
+              <div className="story-card-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#48CAE4" strokeWidth="1.8">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="6" x2="12" y2="18" />
+                  <path d="M15.5 9.5a2.5 2.5 0 0 0-2.5-2.5h-2a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-2.5a2.5 2.5 0 0 1-2.5-2.5" />
+                </svg>
+              </div>
+              <h3 className="story-card-title">COMPETITIVE TRANSPARENT PRICING</h3>
+              <p className="story-card-desc">
+                Direct vessel volume allocations with predictable rates and complete transparency across all shipping routes.
               </p>
             </div>
           </div>
